@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CACES Verify — Vérification de certificats</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --site-primary: #126b50;
+  --site-on-primary: #ffffff;
+  --site-secondary: #e3f3ec;
+  --site-on-secondary: #163d31;
+  --site-background: #f5f8f6;
+  --site-on-background: #14231d;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: light-dark(#ffffff, #18211d);
+  --muted: light-dark(#65766d, #aab9b1);
+  --border: light-dark(#dce6e0, #34453c);
+  --soft: light-dark(#edf5f0, #23362d);
+  --shadow: 0 18px 48px rgba(20, 55, 39, .08);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--site-background); color: var(--site-on-background); font-family: var(--site-font-body); }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+.topbar { background: var(--site-primary); color: var(--site-on-primary); padding: 17px max(22px, calc((100vw - 1160px)/2)); display:flex; align-items:center; justify-content:space-between; gap:18px; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:-.03em; font-size:1.14rem; }
+.brand-mark { width:38px; height:38px; border-radius:12px; background:rgba(255,255,255,.15); display:grid; place-items:center; border:1px solid rgba(255,255,255,.3); }
+.brand-mark svg { width:23px; }
+.topnote { font-size:.86rem; opacity:.88; }
+main { max-width:1160px; margin:auto; padding:42px 22px 64px; }
+.hero { display:grid; grid-template-columns: 1.1fr .9fr; gap:32px; align-items:center; margin-bottom:34px; }
+.eyebrow { display:inline-flex; align-items:center; gap:8px; background:var(--site-secondary); color:var(--site-on-secondary); border-radius:999px; padding:7px 12px; font-size:.78rem; font-weight:750; letter-spacing:.04em; text-transform:uppercase; }
+h1 { font-family:var(--site-font-heading); font-size:clamp(2.15rem, 4.5vw, 3.55rem); line-height:1.05; letter-spacing:-.055em; margin:18px 0 15px; }
+h1 span { color:var(--site-primary); }
+.lead { color:var(--muted); font-size:1.05rem; line-height:1.7; max-width:610px; margin:0; }
+.hero-visual { min-height:225px; border-radius:24px; background:linear-gradient(140deg, var(--site-primary), #1b8b66); color:white; padding:28px; position:relative; overflow:hidden; box-shadow:var(--shadow); }
+.hero-visual:after { content:""; position:absolute; width:240px; height:240px; border:1px solid rgba(255,255,255,.18); border-radius:50%; right:-70px; top:-90px; box-shadow:0 0 0 25px rgba(255,255,255,.05),0 0 0 50px rgba(255,255,255,.04); opacity:var(--site-decoration-opacity); }
+.visual-label { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; opacity:.8; font-weight:700; }
+.visual-title { font-size:1.65rem; line-height:1.2; letter-spacing:-.04em; font-weight:800; max-width:300px; margin:12px 0 22px; }
+.visual-bottom { display:flex; align-items:center; gap:12px; font-size:.88rem; }
+.check-circle { width:36px;height:36px;border-radius:50%;background:#fff;color:var(--site-primary);display:grid;place-items:center;font-weight:900;font-size:1.15rem; }
+.layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr); gap:22px; align-items:start; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:26px; box-shadow:var(--shadow); }
+.panel h2 { margin:0 0 7px; font-size:1.22rem; letter-spacing:-.025em; }
+.sub { color:var(--muted); margin:0 0 22px; font-size:.92rem; line-height:1.55; }
+label { display:block; font-size:.85rem; font-weight:750; margin:0 0 8px; }
+.search-row { display:flex; gap:10px; }
+input { width:100%; min-width:0; border:1px solid var(--border); background:var(--site-background); color:var(--site-on-background); border-radius:12px; padding:14px 15px; outline:none; }
+input:focus { border-color:var(--site-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--site-primary) 18%, transparent); }
+.primary { background:var(--site-primary); color:white; border:0; border-radius:12px; padding:13px 17px; font-weight:750; white-space:nowrap; }
+.primary:hover { filter:brightness(1.08); }
+.examples { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:13px; color:var(--muted); font-size:.8rem; }
+.chip { border:1px solid var(--border); background:var(--soft); color:var(--site-on-background); border-radius:999px; padding:6px 10px; font-size:.78rem; }
+.result { margin-top:22px; border-top:1px solid var(--border); padding-top:20px; display:none; }
+.result.show { display:block; }
+.status { display:inline-flex; align-items:center; gap:7px; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; background:#e1f6e8; color:#17643a; }
+.status.expired { background:#fff0dc; color:#8b4b00; }
+.person { display:flex; align-items:center; gap:15px; margin:17px 0 20px; }
+.avatar { width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:var(--soft);color:var(--site-primary);font-weight:850;font-size:1.05rem; }
+.person h3 { margin:0 0 4px; font-size:1.13rem; }
+.person p { margin:0; color:var(--muted); font-size:.86rem; }
+.details { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.detail { background:var(--site-background); border:1px solid var(--border); border-radius:12px; padding:13px; min-width:0; }
+.detail .k { font-size:.75rem; color:var(--muted); margin-bottom:7px; }
+.detail .v { font-weight:750; font-size:.92rem; overflow-wrap:anywhere; }
+.pdf-btn { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; margin-top:13px; background:transparent; border:1px solid var(--border); border-radius:12px; padding:13px; color:var(--site-on-background); font-weight:750; }
+.pdf-btn:hover { background:var(--soft); }
+.notice { display:none; color:#8b4b00; background:#fff5e6; border:1px solid #f1d8b0; border-radius:12px; padding:12px 14px; margin-top:14px; font-size:.85rem; line-height:1.5; }
+.notice.show { display:block; }
+.side-panel { background:var(--soft); border:1px solid var(--border); border-radius:20px; padding:24px; }
+.side-panel h2 { margin:0 0 18px; font-size:1.1rem; }
+.step { display:flex; gap:12px; margin:17px 0; }
+.step-num { flex:0 0 30px; width:30px;height:30px;border-radius:10px;background:var(--site-primary);color:white;display:grid;place-items:center;font-weight:800;font-size:.85rem; }
+.step h3 { margin:1px 0 5px; font-size:.91rem; }
+.step p { margin:0; color:var(--muted); font-size:.84rem; line-height:1.55; }
+.privacy { border-top:1px solid var(--border); margin-top:20px; padding-top:16px; color:var(--muted); font-size:.8rem; line-height:1.55; }
+footer { max-width:1160px; padding:0 22px 30px; margin:auto; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:.8rem; }
+.demo-tag { display:inline-block; margin-top:10px; font-size:.74rem; font-weight:750; color:var(--muted); }
+@media (max-width:760px) { .topbar { padding:14px 18px; } .topnote { display:none; } main { padding:28px 15px 44px; } .hero,.layout { grid-template-columns:1fr; gap:18px; } .hero-visual { min-height:180px; } .panel { padding:20px; } .search-row { flex-direction:column; } .search-row .primary { width:100%; } footer { padding:0 15px 24px; } }
+</style>
+</head>
+<body>
+<div id="app" data-sites-preview-theme>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/><path d="M12 2.8 20 6v5.5c0 4.6-3.1 7.8-8 9.7-4.9-1.9-8-5.1-8-9.7V6z"/></svg></div><span>CACES VERIFY</span></div>
+  <div class="topnote">Vérification simple · Rapide · Accessible</div>
+</header>
+<main>
+  <section class="hero">
+    <div>
+      <div class="eyebrow"><span>✓</span> Portail de vérification</div>
+      <h1>Vérifiez un CACES.<br><span>En toute simplicité.</span></h1>
+      <p class="lead">Scannez le QR code présent sur la carte du cariste ou saisissez sa référence pour consulter les informations du certificat et son justificatif.</p>
+    </div>
+    <div class="hero-visual"><div class="visual-label">CACES Verify</div><div class="visual-title">Les bonnes informations, au bon moment.</div><div class="visual-bottom"><div class="check-circle">✓</div><span>Consultation depuis votre navigateur<br>Sans application à installer</span></div></div>
+  </section>
+  <section class="layout">
+    <div class="panel">
+      <h2>Vérifier un certificat</h2>
+      <p class="sub">Scannez un QR code ou collez son identifiant pour consulter les informations du certificat.</p>
+      <form id="verify-form">
+        <label for="cert-code">Identifiant du QR code</label>
+        <div class="search-row"><input id="cert-code" name="cert-code" placeholder="Collez le token du QR code" autocomplete="off" required><button class="primary" type="submit">Vérifier le CACES →</button></div>
+      </form>
+      <div class="examples"><span>Tester :</span><button class="chip" type="button" data-code="DEMO-CACES-001">Certificat valide</button><button class="chip" type="button" data-code="DEMO-CACES-002">Certificat expiré</button></div>
+      <div class="notice" id="notice" role="status"></div>
+      <div class="result" id="result" aria-live="polite">
+        <span class="status" id="status"><span>●</span><span id="status-text">Certificat valide</span></span>
+        <div class="person"><div class="avatar" id="initials">JD</div><div><h3 id="full-name">Jean Démonstration</h3><p id="birth-line">Né(e) le 12/04/1990</p></div></div>
+        <div class="details">
+          <div class="detail"><div class="k">Catégorie CACES</div><div class="v" id="category">R.489 · Catégorie 3</div></div>
+          <div class="detail"><div class="k">N° de certificat</div><div class="v" id="number">DEMO-CACES-001</div></div>
+          <div class="detail"><div class="k">Date d’obtention</div><div class="v" id="obtained">15/06/2024</div></div>
+          <div class="detail"><div class="k">Fin de validité indiquée</div><div class="v" id="expiry">14/06/2029</div></div>
+          <div class="detail" style="grid-column:1/-1"><div class="k">Organisme indiqué</div><div class="v" id="organism">Centre de formation de démonstration</div></div>
+        </div>
+        <button class="pdf-btn" id="pdf-button" type="button">▤　Consulter le justificatif PDF (démo)</button>
+        <span class="demo-tag">Exemple fictif — aucune donnée réelle de titulaire.</span>
+      </div>
+    </div>
+    <aside class="side-panel">
+      <h2>Comment ça marche ?</h2>
+      <div class="step"><div class="step-num">1</div><div><h3>Scannez le QR code</h3><p>Utilisez l’appareil photo du téléphone ou un lecteur QR code.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div><h3>Consultez les informations</h3><p>Identité, catégorie, dates et organisme figurent sur la fiche de vérification.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div><h3>Ouvrez le justificatif</h3><p>Consultez le PDF autorisé associé au certificat, si disponible.</p></div></div>
+      <div class="privacy"><strong>Protection des données</strong><br>Le site définitif devra limiter l’accès aux seules informations nécessaires et protéger les justificatifs PDF. Une page de vérification ne prouve pas à elle seule l’authenticité d’un CACES : l’émetteur doit être vérifié.</div>
+    </aside>
+  </section>
+</main>
+<footer><span>© CACES Verify</span><span>Consultation des certificats via Supabase · PDF sécurisé à finaliser</span></footer>
+</div>
+<script>
+const records = {
+  'DEMO-CACES-001': { first:'Jean', last:'Démonstration', birth:'12/04/1990', category:'R.489 · Catégorie 3', number:'DEMO-CACES-001', obtained:'15/06/2024', expiry:'14/06/2029', organism:'Centre de formation de démonstration', valid:true },
+  'DEMO-CACES-002': { first:'Alex', last:'Exemple', birth:'03/09/1988', category:'R.489 · Catégorie 1A', number:'DEMO-CACES-002', obtained:'02/03/2020', expiry:'01/03/2025', organism:'Organisme fictif de démonstration', valid:false }
+};
+const form=document.getElementById('verify-form'), input=document.getElementById('cert-code'), result=document.getElementById('result'), notice=document.getElementById('notice');
+const SUPABASE_URL='https://kelurploprupqpeavzro.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fIXGL2TTvyJXRnstkualqg_PoejX54o';
+function displayRecord(r, demo=false){ const birth=r.date_naissance||r.birth||''; const obtained=r.date_obtention||r.obtained||''; const expiry=r.date_fin_validite||r.expiry||''; const category=r.categorie_caces||r.category||''; const name=r.nom_prenom||(r.first+' '+r.last); const fmt=v=>{if(!v)return 'Non renseignée';const d=new Date(v+'T00:00:00');return Number.isNaN(d.getTime())?v:d.toLocaleDateString('fr-FR')}; document.getElementById('full-name').textContent=name; document.getElementById('initials').textContent=name.split(/\s+/).map(x=>x[0]||'').join('').slice(0,2).toUpperCase(); document.getElementById('birth-line').textContent=birth?'Né(e) le '+fmt(birth):'Date de naissance non renseignée'; document.getElementById('category').textContent=category; document.getElementById('number').textContent=r.numero_certificat||r.number||'—'; document.getElementById('obtained').textContent=fmt(obtained); document.getElementById('expiry').textContent=fmt(expiry); document.getElementById('organism').textContent=r.organisme_formateur||r.organism||'Non renseigné'; const expired=expiry && new Date(expiry+'T23:59:59')<new Date(); const s=document.getElementById('status'); s.classList.toggle('expired',!!expired);document.getElementById('status-text').textContent=demo?(r.valid?'Exemple valide (démo)':'Exemple expiré (démo)'):(expired?'Date de validité dépassée':'Date de validité non dépassée'); result.classList.add('show'); document.querySelector('.demo-tag').textContent=demo?'Exemple fictif — aucune donnée réelle de titulaire.':'Données consultées depuis Supabase. Vérifiez l’authenticité auprès de l’organisme émetteur.'; document.getElementById('pdf-button').style.display='none'; }
+async function verify(code){ const key=String(code||'').trim(); notice.classList.remove('show'); result.classList.remove('show'); if(records[key.toUpperCase()]){displayRecord(records[key.toUpperCase()],true);return;} if(!key){notice.textContent='Saisissez un identifiant ou choisissez un exemple ci-dessous.';notice.classList.add('show');return;} if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)){notice.textContent='Identifiant invalide. Collez le token UUID complet obtenu dans Supabase, ou utilisez un bouton de démonstration.';notice.classList.add('show');return;} notice.textContent='Vérification en cours…';notice.classList.add('show'); try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/verifier_caces',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({p_token:key})});const raw=await response.text();let data;try{data=raw?JSON.parse(raw):null;}catch{data=raw;}if(!response.ok){const detail=data&&typeof data==='object'?(data.message||data.details||data.hint||data.code):String(data||'');throw new Error('Erreur Supabase ('+response.status+')'+(detail?' : '+detail:''));}if(!Array.isArray(data)||!data.length){notice.textContent='Aucun certificat trouvé. Vérifiez que le token correspond à un certificat dans la table certificats.';notice.classList.add('show');return;}notice.classList.remove('show');displayRecord(data[0],false);}catch(e){notice.textContent=(e&&e.message)?e.message:'Erreur de connexion. Vérifiez votre connexion Internet puis réessayez.';notice.classList.add('show');}}
+form.addEventListener('submit',e=>{e.preventDefault();verify(input.value).catch(err=>{notice.textContent='Erreur : '+(err&&err.message?err.message:'la vérification a échoué.');notice.classList.add('show');});});
+document.querySelectorAll('[data-code]').forEach(b=>{b.addEventListener('click',e=>{e.preventDefault();const code=b.getAttribute('data-code');input.value=code;verify(code);});});
+document.getElementById('pdf-button').addEventListener('click',()=>{notice.textContent='Le justificatif PDF sécurisé sera ajouté dans une prochaine étape.';notice.classList.add('show');});
+const tokenFromUrl=new URLSearchParams(window.location.search).get('token');if(tokenFromUrl){input.value=tokenFromUrl;verify(tokenFromUrl);}
+</script>
+</body>
+</html>
