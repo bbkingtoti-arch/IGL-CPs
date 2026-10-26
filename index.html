@@ -5,311 +5,233 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CACES Verify — Vérification de certificats</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f5f8f6;color:#14231d}
-header{background:white;padding:18px 6%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px #ddd}
-.brand{font-weight:bold;color:#126b50;font-size:22px}
-main{max-width:1100px;margin:25px auto;padding:20px}
-.hero{background:linear-gradient(90deg,#082b24dd,#082b2470),url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85') center/cover;color:white;padding:45px 30px;border-radius:12px}
-.hero h1{font-size:42px;margin:12px 0}
-.layout{display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:25px}
-.panel,aside{background:white;border:1px solid #dce6e0;border-radius:12px;padding:24px}
-h2{margin-top:0}
-label{display:block;font-weight:bold;margin:12px 0 8px}
-input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #ccc;border-radius:8px}
-button{cursor:pointer;border:0;border-radius:8px;padding:13px;background:#126b50;color:white;font-weight:bold;margin-top:10px}
-button:hover{opacity:.85}
-.chip{background:#e3f3ec;color:#126b50;margin-right:6px}
-.notice{display:none;margin-top:15px;padding:12px;background:#fff0dc;color:#8b4b00;border-radius:8px;overflow-wrap:anywhere}
-.result{display:none;margin-top:20px}
-.status{padding:12px;background:#07865d;color:white;border-radius:8px}
-.details{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
-.detail{padding:12px;background:#f5f8f6;border-radius:8px;overflow-wrap:anywhere}
-.avatar{width:90px;height:90px;border-radius:8px;background:#e3f3ec;display:grid;place-items:center;font-weight:bold;color:#126b50;margin:15px 0}
-.avatar img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.pdf-btn,.qr-btn{width:100%}
-#qr-panel{display:none;text-align:center;margin-top:15px}
-#qr-image{width:180px;height:180px;max-width:100%}
-footer{text-align:center;color:#65766d;padding:25px}
-@media(max-width:750px){.layout{grid-template-columns:1fr}header{padding:15px}main{padding:12px}.hero h1{font-size:32px}.details{grid-template-columns:1fr 1fr}}
+:root {
+  color-scheme: light;
+  --site-primary: #126b50;
+  --site-on-primary: #ffffff;
+  --site-secondary: #e3f3ec;
+  --site-on-secondary: #163d31;
+  --site-background: #f5f8f6;
+  --site-on-background: #14231d;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: light-dark(#ffffff, #18211d);
+  --muted: light-dark(#65766d, #aab9b1);
+  --border: light-dark(#dce6e0, #34453c);
+  --soft: light-dark(#edf5f0, #23362d);
+  --shadow: 0 18px 48px rgba(20, 55, 39, .08);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--site-background); color: var(--site-on-background); font-family: var(--site-font-body); }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+.topbar { background:linear-gradient(110deg,#07583f,#0c7955); color:#fff; padding:13px max(22px, calc((100vw - 1260px)/2)); display:flex; align-items:center; justify-content:space-between; gap:18px; box-shadow:0 5px 20px rgba(8,45,31,.18); border-bottom:1px solid #0a684a; }
+.brand { display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:-.03em; font-size:1.14rem; }
+.brand-copy { display:flex; flex-direction:column; gap:2px; }
+.brand-name { font-size:1.14rem; line-height:1.1; }
+.brand-company { font-size:.72rem; font-weight:750; letter-spacing:.13em; opacity:.9; }
+.brand-mark { width:42px; height:42px; border-radius:13px; background:#fff; color:#087b57; display:grid; place-items:center; border:1px solid #b9e3d1; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.brand-mark svg { width:23px; }
+.topnote { font-size:.86rem; color:#effcf5; font-weight:700; }
+main { max-width:1260px; margin:auto; padding:24px 22px 54px; }
+.hero { display:block; margin-bottom:25px; }
+.eyebrow { display:inline-flex; align-items:center; gap:8px; background:var(--site-secondary); color:var(--site-on-secondary); border-radius:999px; padding:7px 12px; font-size:.78rem; font-weight:750; letter-spacing:.04em; text-transform:uppercase; }
+h1 { font-family:var(--site-font-heading); font-size:clamp(2.15rem, 4.5vw, 3.55rem); line-height:1.05; letter-spacing:-.055em; margin:18px 0 15px; }
+h1 span { color:var(--site-primary); }
+.lead { color:var(--muted); font-size:1.05rem; line-height:1.7; max-width:610px; margin:0; }
+.hero-visual { min-height:390px; border-radius:18px; background-color:#07583f; background-image:linear-gradient(90deg,rgba(3,38,27,.94) 0%,rgba(3,53,37,.76) 48%,rgba(3,27,24,.14) 100%),linear-gradient(0deg,rgba(3,27,24,.38),transparent 55%),url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85'); background-position:center; background-size:cover; background-repeat:no-repeat; color:white; padding:36px; position:relative; overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:center; isolation:isolate; border:1px solid rgba(15,126,84,.25); }
+.hero-visual:after { content:""; position:absolute; width:240px; height:240px; border:1px solid rgba(255,255,255,.18); border-radius:50%; right:-70px; top:-90px; box-shadow:0 0 0 25px rgba(255,255,255,.05),0 0 0 50px rgba(255,255,255,.04); opacity:var(--site-decoration-opacity); pointer-events:none; }
+.visual-label { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; opacity:.8; font-weight:700; }
+.visual-title { font-size:clamp(2.3rem,5vw,3.5rem); line-height:1.04; letter-spacing:-.045em; font-weight:850; max-width:570px; margin:14px 0 15px; }
+.visual-bottom { display:flex; align-items:center; gap:12px; font-size:.88rem; }
+.check-circle { width:36px;height:36px;border-radius:50%;background:#fff;color:var(--site-primary);display:grid;place-items:center;font-weight:900;font-size:1.15rem; }
+.layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr); gap:22px; align-items:start; }
+.panel { background:var(--surface); border:1px solid #cfe5d8; border-top:4px solid var(--site-primary); border-radius:16px; padding:26px; box-shadow:var(--shadow); }
+.panel h2 { margin:0 0 7px; font-size:1.22rem; letter-spacing:-.025em; }
+.sub { color:var(--muted); margin:0 0 22px; font-size:.92rem; line-height:1.55; }
+label { display:block; font-size:.85rem; font-weight:750; margin:0 0 8px; }
+.search-row { display:flex; gap:10px; }
+input { width:100%; min-width:0; border:1px solid var(--border); background:var(--site-background); color:var(--site-on-background); border-radius:12px; padding:14px 15px; outline:none; }
+input:focus { border-color:var(--site-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--site-primary) 18%, transparent); }
+.primary { background:var(--site-primary); color:white; border:0; border-radius:12px; padding:13px 17px; font-weight:750; white-space:nowrap; box-shadow:0 5px 14px rgba(18,107,80,.18); transition:transform .15s ease,filter .15s ease; }
+.primary:hover { filter:brightness(1.08); }
+.examples { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:13px; color:var(--muted); font-size:.8rem; }
+.chip { border:1px solid var(--border); background:var(--soft); color:var(--site-on-background); border-radius:999px; padding:6px 10px; font-size:.78rem; }
+.result { margin-top:22px; border-top:1px solid var(--border); padding-top:20px; display:none; }
+.result.show { display:block; }
+.status { display:flex; align-items:center; gap:9px; border-radius:8px; padding:12px 15px; font-size:.88rem; font-weight:800; background:linear-gradient(100deg,#07865d,#07996c); color:#fff; }
+.status.expired { background:#fff0dc; color:#8b4b00; }
+.person { display:flex; align-items:center; gap:15px; margin:17px 0 20px; padding:15px; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
+.avatar { width:96px;height:96px;flex:0 0 96px;display:grid;place-items:center;border-radius:7px;background:var(--soft);color:var(--site-primary);font-weight:850;font-size:1.05rem; overflow:hidden; border:1px solid var(--border); }
+.avatar img { width:100%;height:100%;object-fit:cover;display:block; }
+.person h3 { margin:0 0 4px; font-size:1.13rem; }
+.person p { margin:0; color:var(--muted); font-size:.86rem; }
+.details { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.detail { background:var(--site-background); border:1px solid var(--border); border-radius:12px; padding:13px; min-width:0; }
+.detail .k { font-size:.75rem; color:var(--muted); margin-bottom:7px; }
+.detail .v { font-weight:750; font-size:.92rem; overflow-wrap:anywhere; }
+.pdf-btn { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; margin-top:13px; background:#087b57; border:1px solid #087b57; border-radius:8px; padding:14px; color:#fff; font-weight:750; transition:background .15s ease,transform .15s ease; }
+.pdf-btn:hover { background:var(--soft); }
+.qr-btn { display:flex; align-items:center; justify-content:center; width:100%; margin-top:10px; background:#edf8f4; border:1px solid #d3eae0; border-radius:8px; padding:12px; color:var(--site-primary); font-weight:750; }
+.qr-panel { display:none; margin-top:12px; padding:16px; border:1px solid var(--border); border-radius:14px; text-align:center; background:var(--surface); }
+.qr-panel.show { display:block; }
+.qr-panel img { width:180px; height:180px; max-width:100%; }
+.qr-panel p { color:var(--muted); font-size:.82rem; overflow-wrap:anywhere; }
+.notice { display:none; color:#8b4b00; background:#fff5e6; border:1px solid #f1d8b0; border-radius:12px; padding:12px 14px; margin-top:14px; font-size:.85rem; line-height:1.5; }
+.notice.show { display:block; }
+.side-panel { background:linear-gradient(145deg,#e6f5ec,#f5fbf7); border:1px solid #c8e5d5; border-radius:20px; padding:24px; box-shadow:0 12px 30px rgba(20,55,39,.05); }
+.side-panel h2 { margin:0 0 18px; font-size:1.1rem; }
+.step { display:flex; gap:12px; margin:17px 0; }
+.step-num { flex:0 0 30px; width:30px;height:30px;border-radius:10px;background:var(--site-primary);color:white;display:grid;place-items:center;font-weight:800;font-size:.85rem; }
+.step h3 { margin:1px 0 5px; font-size:.91rem; }
+.step p { margin:0; color:var(--muted); font-size:.84rem; line-height:1.55; }
+.privacy { border-top:1px solid var(--border); margin-top:20px; padding-top:16px; color:var(--muted); font-size:.8rem; line-height:1.55; }
+footer { max-width:1160px; padding:0 22px 30px; margin:auto; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:.8rem; }
+.demo-tag { display:inline-block; margin-top:10px; font-size:.74rem; font-weight:750; color:var(--muted); }
+/* Finitions visuelles et états accessibles */
+.topbar { position:relative; }
+.topnote { display:flex; align-items:center; gap:18px; }
+.topnote a { color:inherit; text-decoration:none; opacity:.92; }
+.topnote a:hover { opacity:1; text-decoration:underline; text-underline-offset:4px; }
+.hero-visual { min-height:360px; }
+.hero-visual:before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 85% 20%,rgba(70,210,145,.2),transparent 34%); pointer-events:none; z-index:-1; }
+.panel,.side-panel { transition:box-shadow .2s ease,transform .2s ease; }
+.panel:hover { box-shadow:0 22px 56px rgba(20,55,39,.11); }
+.primary:focus-visible,.chip:focus-visible,.pdf-btn:focus-visible,.qr-btn:focus-visible,input:focus-visible { outline:3px solid #6ccca5; outline-offset:3px; }
+button:disabled { opacity:.55; cursor:not-allowed; box-shadow:none; }
+.pdf-btn:hover:not(:disabled) { background:#066447; transform:translateY(-1px); }
+.qr-btn:hover { background:#dff3e9; }
+.notice { overflow-wrap:anywhere; }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; } }
+@media (max-width:760px) { .topbar { padding:12px 15px; } .topnote { display:none; } main { padding:18px 12px 35px; } .hero,.layout { display:grid; grid-template-columns:1fr; gap:15px; } .hero-visual { min-height:320px; padding:22px; background-position:center; } .panel { padding:16px; } .search-row { flex-direction:column; } .search-row .primary { width:100%; } .details { grid-template-columns:1fr 1fr; } .avatar { width:78px;height:78px;flex-basis:78px; } footer { padding:0 15px 24px; } }
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">✓ RIB CACES — CACES VERIFY</div>
-  <div>Vérification de certificats</div>
+<div id="app" data-sites-preview-theme>
+<header class="topbar">
+  <div class="brand" aria-label="RIB CACES — CACES Verify"><div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/><path d="M12 2.8 20 6v5.5c0 4.6-3.1 7.8-8 9.7-4.9-1.9-8-5.1-8-9.7V6z"/></svg></div><div class="brand-copy"><span class="brand-company">RIB CACES</span><span class="brand-name">CACES VERIFY</span></div></div>
+  <nav class="topnote" aria-label="Navigation principale"><a href="#accueil">Accueil</a><a href="#verification">Vérifier un CACES</a><a href="#fonctionnement">Fonctionnement</a></nav>
 </header>
-
 <main>
-  <section class="hero">
-    <p>PORTAIL DE VÉRIFICATION</p>
-    <h1>CACES VERIFY</h1>
-    <p>Vérifiez la validité d’un certificat CACES en toute simplicité.</p>
+  <section class="hero" id="accueil">
+    <div class="hero-visual" role="img" aria-label="Chariot élévateur dans un entrepôt logistique"><div class="visual-label">RIB CACES · PORTAIL OFFICIEL DE VÉRIFICATION</div><div class="visual-title">CACES VERIFY</div><p style="max-width:520px;color:#f0faf5;font-size:1.12rem;line-height:1.6;margin:0 0 22px">Vérifiez la validité d’un certificat CACES en toute simplicité.</p><div class="visual-bottom"><div class="check-circle">✓</div><span>Rapide et simple<br>Consultation depuis votre navigateur</span></div></div>
   </section>
-
-  <section class="layout">
+  <section class="layout" id="verification">
     <div class="panel">
       <h2>Vérifier un certificat</h2>
-      <p>Collez l’identifiant UUID de votre QR code pour consulter les informations du certificat.</p>
-
+      <p class="sub">Scannez un QR code ou collez son identifiant pour consulter les informations du certificat.</p>
       <form id="verify-form">
         <label for="cert-code">Identifiant du QR code</label>
-        <input id="cert-code" placeholder="Collez le token UUID ici" required>
-        <button type="submit">Vérifier le CACES →</button>
+        <div class="search-row"><input id="cert-code" name="cert-code" placeholder="Collez le token du QR code" autocomplete="off" required><button class="primary" type="submit">Vérifier le CACES →</button></div>
       </form>
-
-      <p>Tester la démonstration :</p>
-      <button class="chip" type="button" data-code="DEMO-CACES-001">Certificat valide (démo)</button>
-      <button class="chip" type="button" data-code="DEMO-CACES-002">Certificat expiré (démo)</button>
-
-      <div id="notice" class="notice" role="status"></div>
-
-      <div id="result" class="result">
-        <div id="status" class="status"><span id="status-text"></span></div>
-        <div id="initials" class="avatar">?</div>
-        <h3 id="full-name"></h3>
-        <p id="birth-line"></p>
-
+      <div class="examples"><span>Tester :</span><button class="chip" type="button" data-code="DEMO-CACES-001">Certificat valide</button><button class="chip" type="button" data-code="DEMO-CACES-002">Certificat expiré</button></div>
+      <div class="notice" id="notice" role="status"></div>
+      <div class="result" id="result" aria-live="polite">
+        <span class="status" id="status"><span>●</span><span id="status-text">Certificat valide</span></span>
+        <div class="person"><div class="avatar" id="initials" aria-label="Photo du titulaire">JD</div><div><h3 id="full-name">Jean Démonstration</h3><p id="birth-line">Né(e) le 12/04/1990</p></div></div>
         <div class="details">
-          <div class="detail"><b>Catégorie CACES</b><p id="category"></p></div>
-          <div class="detail"><b>N° de certificat</b><p id="number"></p></div>
-          <div class="detail"><b>Date d’obtention</b><p id="obtained"></p></div>
-          <div class="detail"><b>Fin de validité</b><p id="expiry"></p></div>
-          <div class="detail" style="grid-column:1/-1"><b>Organisme formateur</b><p id="organism"></p></div>
+          <div class="detail"><div class="k">Catégorie CACES</div><div class="v" id="category">R.489 · Catégorie 3</div></div>
+          <div class="detail"><div class="k">N° de certificat</div><div class="v" id="number">DEMO-CACES-001</div></div>
+          <div class="detail"><div class="k">Date d’obtention</div><div class="v" id="obtained">15/06/2024</div></div>
+          <div class="detail"><div class="k">Fin de validité indiquée</div><div class="v" id="expiry">14/06/2029</div></div>
+          <div class="detail" style="grid-column:1/-1"><div class="k">Organisme indiqué</div><div class="v" id="organism">Centre de formation de démonstration</div></div>
         </div>
-
-        <button id="pdf-button" class="pdf-btn" type="button">Consulter le justificatif PDF</button>
-        <button id="qr-button" class="qr-btn" type="button">Créer le QR code</button>
-        <div id="qr-panel">
-          <img id="qr-image" alt="QR code">
-          <p id="qr-link"></p>
-          <button id="copy-link" type="button">Copier le lien</button>
-        </div>
+        <button class="pdf-btn" id="pdf-button" type="button">▤　Consulter le justificatif PDF</button>
+        <button class="qr-btn" id="qr-button" type="button">▦　Créer le QR code de vérification</button>
+        <div class="qr-panel" id="qr-panel" aria-live="polite"><img id="qr-image" alt="QR code de vérification"><p id="qr-link"></p><button class="chip" id="copy-link" type="button">Copier le lien</button></div>
+        <span class="demo-tag">Exemple fictif — aucune donnée réelle de titulaire.</span>
       </div>
     </div>
-
-    <aside>
+    <aside class="side-panel" id="fonctionnement">
       <h2>Comment ça marche ?</h2>
-      <p><b>1. Scannez le QR code</b><br>Utilisez l’appareil photo de votre téléphone.</p>
-      <p><b>2. Consultez les informations</b><br>Identité, catégorie et dates du certificat.</p>
-      <p><b>3. Ouvrez le PDF</b><br>Si un justificatif est disponible.</p>
-      <hr>
-      <p><b>Protection des données</b><br>Seules les informations autorisées doivent être publiées. Vérifiez toujours l’authenticité auprès de l’organisme émetteur.</p>
+      <div class="step"><div class="step-num">1</div><div><h3>Scannez le QR code</h3><p>Utilisez l’appareil photo du téléphone ou un lecteur QR code.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div><h3>Consultez les informations</h3><p>Identité, catégorie, dates et organisme figurent sur la fiche de vérification.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div><h3>Ouvrez le justificatif</h3><p>Consultez le PDF autorisé associé au certificat, si disponible.</p></div></div>
+      <div class="privacy"><strong>Protection des données</strong><br>Le site définitif devra limiter l’accès aux seules informations nécessaires et protéger les justificatifs PDF. Une page de vérification ne prouve pas à elle seule l’authenticité d’un CACES : l’émetteur doit être vérifié.</div>
     </aside>
   </section>
 </main>
-
-<footer>© CACES Verify — Vérification des certificats via Supabase</footer>
-
+<footer><span>© CACES Verify</span><span>Consultation des certificats via Supabase · justificatif PDF selon les droits d’accès</span></footer>
+</div>
 <script>
-const SUPABASE_URL = 'https://kelurploprupqpeavzro.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_fIXGL2TTvyJXRnstkualqg_PoejX54o';
-
-const demos = {
-  'DEMO-CACES-001': {
-    nom_prenom:'Jean Démonstration',
-    date_naissance:'1990-04-12',
-    categorie_caces:'R.489 — Catégorie 3',
-    numero_certificat:'DEMO-CACES-001',
-    date_obtention:'2024-06-15',
-    date_fin_validite:'2029-06-14',
-    organisme_formateur:'Centre fictif de démonstration',
-    demo:true
-  },
-  'DEMO-CACES-002': {
-    nom_prenom:'Alex Exemple',
-    date_naissance:'1988-09-03',
-    categorie_caces:'R.489 — Catégorie 1A',
-    numero_certificat:'DEMO-CACES-002',
-    date_obtention:'2020-03-02',
-    date_fin_validite:'2025-03-01',
-    organisme_formateur:'Organisme fictif de démonstration',
-    demo:true
-  }
+const records = {
+  'DEMO-CACES-001': { first:'Jean', last:'Démonstration', birth:'12/04/1990', category:'R.489 · Catégorie 3', number:'DEMO-CACES-001', obtained:'15/06/2024', expiry:'14/06/2029', organism:'Centre de formation de démonstration', valid:true },
+  'DEMO-CACES-002': { first:'Alex', last:'Exemple', birth:'03/09/1988', category:'R.489 · Catégorie 1A', number:'DEMO-CACES-002', obtained:'02/03/2020', expiry:'01/03/2025', organism:'Organisme fictif de démonstration', valid:false }
 };
-
-const form = document.getElementById('verify-form');
-const input = document.getElementById('cert-code');
-const result = document.getElementById('result');
-const notice = document.getElementById('notice');
+const form=document.getElementById('verify-form'), input=document.getElementById('cert-code'), result=document.getElementById('result'), notice=document.getElementById('notice');
 let currentPdfPath = null;
-let currentToken = '';
-
-function showNotice(message) {
-  notice.textContent = message;
-  notice.style.display = 'block';
-}
-
-function formatDate(value) {
-  if (!value) return 'Non renseignée';
-  const d = new Date(value + 'T00:00:00');
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString('fr-FR');
-}
-
-function displayRecord(r) {
-  const name = r.nom_prenom || [r.first, r.last].filter(Boolean).join(' ') || 'Nom non renseigné';
-  document.getElementById('full-name').textContent = name;
-  document.getElementById('birth-line').textContent = 'Né(e) le ' + formatDate(r.date_naissance || r.birth);
-  document.getElementById('category').textContent = r.categorie_caces || r.category || 'Non renseignée';
-  document.getElementById('number').textContent = r.numero_certificat || r.number || '—';
-  document.getElementById('obtained').textContent = formatDate(r.date_obtention || r.obtained);
-  document.getElementById('expiry').textContent = formatDate(r.date_fin_validite || r.expiry);
-  document.getElementById('organism').textContent = r.organisme_formateur || r.organism || 'Non renseigné';
-
-  const avatar = document.getElementById('initials');
-  avatar.replaceChildren();
-  const photo = r.photo_url || r.photo_path || r.photo_titulaire_url || '';
-  if (!r.demo && photo) {
-    const img = document.createElement('img');
-    img.src = photo;
-    img.alt = 'Photo du titulaire';
-    img.onerror = () => { avatar.textContent = name.split(/\s+/).map(x => x[0] || '').join('').slice(0,2).toUpperCase(); };
-    avatar.appendChild(img);
-  } else {
-    avatar.textContent = name.split(/\s+/).map(x => x[0] || '').join('').slice(0,2).toUpperCase();
-  }
-
-  const expiry = r.date_fin_validite || r.expiry;
-  const expired = expiry && new Date(expiry + 'T23:59:59') < new Date();
-  document.getElementById('status-text').textContent = r.demo
-    ? (r.numero_certificat === 'DEMO-CACES-002' ? 'Exemple expiré (démo)' : 'Exemple valide (démo)')
-    : (expired ? 'Date de validité dépassée' : 'Date de validité non dépassée');
-
-  document.getElementById('status').style.background = expired ? '#fff0dc' : '#07865d';
-  document.getElementById('status').style.color = expired ? '#8b4b00' : '#fff';
-
-  currentPdfPath = r.demo ? null : (r.pdf_path || null);
-  document.getElementById('pdf-button').style.display = r.demo ? 'none' : 'block';
-  document.getElementById('pdf-button').disabled = !currentPdfPath;
-
-  result.style.display = 'block';
-  notice.style.display = 'none';
-}
-
-async function verify(code) {
-  const key = String(code || '').trim();
-  currentToken = key;
-  result.style.display = 'none';
-  notice.style.display = 'none';
-
-  if (demos[key.toUpperCase()]) {
-    displayRecord(demos[key.toUpperCase()]);
+const SUPABASE_URL='https://kelurploprupqpeavzro.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_fIXGL2TTvyJXRnstkualqg_PoejX54o';
+function displayRecord(r, demo=false){ const birth=r.date_naissance||r.birth||''; const obtained=r.date_obtention||r.obtained||''; const expiry=r.date_fin_validite||r.expiry||''; const category=r.categorie_caces||r.category||''; const name=r.nom_prenom||(r.first+' '+r.last); const fmt=v=>{if(!v)return 'Non renseignée';const d=new Date(v+'T00:00:00');return Number.isNaN(d.getTime())?v:d.toLocaleDateString('fr-FR')}; currentPdfPath=demo?null:(r.pdf_path||null); document.getElementById('full-name').textContent=name; const avatar=document.getElementById('initials'); const initials=name.split(/\s+/).map(x=>x[0]||'').join('').slice(0,2).toUpperCase(); const photoUrl=demo?'':(r.photo_url||r.photo_path||r.photo_titulaire_url||r.photo_titulaire||''); avatar.replaceChildren(); if(photoUrl){const img=document.createElement('img');img.alt='Photo du titulaire '+name;img.src=photoUrl;img.onerror=()=>{avatar.replaceChildren();avatar.textContent=initials;};avatar.appendChild(img);}else{avatar.textContent=initials;} document.getElementById('birth-line').textContent=birth?'Né(e) le '+fmt(birth):'Date de naissance non renseignée'; document.getElementById('category').textContent=category; document.getElementById('number').textContent=r.numero_certificat||r.number||'—'; document.getElementById('obtained').textContent=fmt(obtained); document.getElementById('expiry').textContent=fmt(expiry); document.getElementById('organism').textContent=r.organisme_formateur||r.organism||'Non renseigné'; const expired=expiry && new Date(expiry+'T23:59:59')<new Date(); const s=document.getElementById('status'); s.classList.toggle('expired',!!expired);document.getElementById('status-text').textContent=demo?(r.valid?'Exemple valide (démo)':'Exemple expiré (démo)'):(expired?'Date de validité dépassée':'Date de validité non dépassée'); result.classList.add('show'); document.querySelector('.demo-tag').textContent=demo?'Exemple fictif — aucune donnée réelle de titulaire.':'Données consultées depuis Supabase. Vérifiez l’authenticité auprès de l’organisme émetteur.'; const pdfButton=document.getElementById('pdf-button'); pdfButton.style.display=demo?'none':'inline-flex'; pdfButton.disabled=!currentPdfPath; pdfButton.textContent=currentPdfPath?'▤　Consulter le justificatif PDF':'PDF non renseigné pour ce certificat'; }
+async function verify(code){ const key=String(code||'').trim(); notice.classList.remove('show'); result.classList.remove('show'); if(records[key.toUpperCase()]){displayRecord(records[key.toUpperCase()],true);return;} if(!key){notice.textContent='Saisissez un identifiant ou choisissez un exemple ci-dessous.';notice.classList.add('show');return;} if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)){notice.textContent='Identifiant invalide. Collez le token UUID complet obtenu dans Supabase, ou utilisez un bouton de démonstration.';notice.classList.add('show');return;} notice.textContent='Vérification en cours…';notice.classList.add('show'); try{const response=await fetch(SUPABASE_URL+'/rest/v1/rpc/verifier_caces',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify({p_token:key})});const raw=await response.text();let data;try{data=raw?JSON.parse(raw):null;}catch{data=raw;}if(!response.ok){const detail=data&&typeof data==='object'?(data.message||data.details||data.hint||data.code):String(data||'');throw new Error('Erreur Supabase ('+response.status+')'+(detail?' : '+detail:''));}if(!Array.isArray(data)||!data.length){notice.textContent='Aucun certificat trouvé. Vérifiez que le token correspond à un certificat dans la table certificats.';notice.classList.add('show');return;}notice.classList.remove('show');displayRecord(data[0],false);}catch(e){notice.textContent=(e&&e.message)?e.message:'Erreur de connexion. Vérifiez votre connexion Internet puis réessayez.';notice.classList.add('show');}}
+form.addEventListener('submit',e=>{e.preventDefault();verify(input.value).catch(err=>{notice.textContent='Erreur : '+(err&&err.message?err.message:'la vérification a échoué.');notice.classList.add('show');});});
+document.querySelectorAll('[data-code]').forEach(b=>{b.addEventListener('click',e=>{e.preventDefault();const code=b.getAttribute('data-code');input.value=code;verify(code);});});
+async function openCertificatePdf(){
+  if(!currentPdfPath){
+    notice.textContent='Aucun PDF n’est associé à ce certificat. Vérifiez que verifier_caces renvoie pdf_path.';
+    notice.classList.add('show');
     return;
   }
-
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) {
-    showNotice('Identifiant invalide. Collez le token UUID complet obtenu depuis Supabase.');
-    return;
-  }
-
-  showNotice('Vérification en cours…');
-
+  const button=document.getElementById('pdf-button');
+  let pdfTab=null;
+  button.disabled=true;
+  const oldText=button.textContent;
+  button.textContent='Ouverture du PDF…';
+  notice.classList.remove('show');
   try {
-    const response = await fetch(SUPABASE_URL + '/rest/v1/rpc/verifier_caces', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_PUBLISHABLE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
-      },
-      body: JSON.stringify({ p_token: key })
-    });
-
-    const raw = await response.text();
-    let data;
-    try { data = raw ? JSON.parse(raw) : null; }
-    catch { data = null; }
-
-    if (!response.ok) {
-      throw new Error(data?.message || 'Erreur Supabase ' + response.status);
-    }
-
-    if (!Array.isArray(data) || !data.length) {
-      showNotice('Aucun certificat trouvé. Vérifiez le token et la fonction verifier_caces.');
-      return;
-    }
-
-    displayRecord(data[0]);
-  } catch (e) {
-    showNotice('Erreur de connexion : ' + (e.message || 'vérification impossible'));
-  }
-}
-
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  verify(input.value);
-});
-
-document.querySelectorAll('[data-code]').forEach(button => {
-  button.addEventListener('click', () => {
-    input.value = button.dataset.code;
-    verify(button.dataset.code);
-  });
-});
-
-document.getElementById('pdf-button').addEventListener('click', async () => {
-  if (!currentPdfPath) {
-    showNotice('Aucun PDF associé à ce certificat.');
-    return;
-  }
-
-  try {
-    const path = currentPdfPath.replace(/^\/+/, '').replace(/^caces-pdf\//, '');
-    const response = await fetch(
-      SUPABASE_URL + '/storage/v1/object/sign/caces-pdf/' +
-      path.split('/').map(encodeURIComponent).join('/'),
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_PUBLISHABLE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_PUBLISHABLE_KEY
-        },
-        body: JSON.stringify({ expiresIn: 300 })
+    const pathValue=String(currentPdfPath).trim();
+    if(/^https?:\/\//i.test(pathValue)){
+      const url=new URL(pathValue);
+      if(url.pathname.includes('/storage/v1/object/public/')){
+        pdfTab=window.open('about:blank','_blank');
+        if(pdfTab){pdfTab.opener=null;pdfTab.location.href=url.href;}
+        else {window.location.href=url.href;}
+        return;
       }
-    );
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Erreur Storage');
-    const url = data.signedURL || data.signedUrl;
-    if (!url) throw new Error('URL PDF introuvable');
-    window.open(url.startsWith('http') ? url : new URL(url, SUPABASE_URL).href, '_blank', 'noopener,noreferrer');
-  } catch (e) {
-    showNotice('Impossible d’ouvrir le PDF : ' + (e.message || 'erreur inconnue'));
+      if(url.pathname.includes('/storage/v1/object/sign/')){
+        pdfTab=window.open('about:blank','_blank');
+        if(pdfTab){pdfTab.opener=null;pdfTab.location.href=url.href;}
+        else {window.location.href=url.href;}
+        return;
+      }
+      throw new Error('URL PDF non reconnue. Enregistrez un lien public Supabase ou le chemin du fichier.');
+    }
+    let path=pathValue.replace(/^\/+/, '').replace(/^caces-pdf\//, '');
+    if(!path || path.includes('..')) throw new Error('Le chemin du PDF est invalide.');
+    pdfTab=window.open('about:blank','_blank');
+    const encodedPath=path.split('/').map(part=>encodeURIComponent(part)).join('/');
+    const response=await fetch(SUPABASE_URL+'/storage/v1/object/sign/caces-pdf/'+encodedPath,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY,'Authorization':'Bearer '+SUPABASE_PUBLISHABLE_KEY},
+      body:JSON.stringify({expiresIn:300})
+    });
+    const raw=await response.text();
+    let data;
+    try{data=raw?JSON.parse(raw):{};}catch{data={message:raw};}
+    if(!response.ok) throw new Error(data.message||data.error||('Erreur Storage '+response.status));
+    const signed=data.signedURL||data.signedUrl||data.signed_url;
+    if(!signed) throw new Error('Supabase n’a pas renvoyé d’URL signée. Vérifiez les permissions du bucket.');
+    const absolute=signed.startsWith('http')?signed:new URL(signed,SUPABASE_URL).href;
+    if(pdfTab){pdfTab.opener=null;pdfTab.location.href=absolute;}
+    else {window.location.href=absolute;}
+  } catch(e){
+    if(pdfTab && !pdfTab.closed) pdfTab.close();
+    notice.textContent='Impossible d’ouvrir le PDF : '+(e.message||'erreur inconnue')+'. Vérifiez pdf_path et les permissions Storage du bucket caces-pdf.';
+    notice.classList.add('show');
+  } finally {
+    button.disabled=false;
+    button.textContent=oldText;
   }
-});
-
-document.getElementById('qr-button').addEventListener('click', () => {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentToken)) {
-    showNotice('Vérifiez d’abord un certificat réel avec un token UUID.');
-    return;
-  }
-
-  const link = new URL(window.location.href);
-  link.search = '';
-  link.hash = '';
-  link.searchParams.set('token', currentToken);
-
-  document.getElementById('qr-link').textContent = link.href;
-  document.getElementById('qr-image').src =
-    'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(link.href);
-  document.getElementById('qr-panel').style.display = 'block';
-});
-
-document.getElementById('copy-link').addEventListener('click', async () => {
-  const value = document.getElementById('qr-link').textContent;
-  try {
-    await navigator.clipboard.writeText(value);
-    document.getElementById('copy-link').textContent = 'Lien copié ✓';
-  } catch {
-    showNotice('Copiez manuellement le lien affiché.');
-  }
-});
-
-const tokenFromUrl = new URLSearchParams(window.location.search).get('token');
-if (tokenFromUrl) {
-  input.value = tokenFromUrl;
-  verify(tokenFromUrl);
 }
+document.getElementById('pdf-button').addEventListener('click',openCertificatePdf);
+document.getElementById('qr-button').addEventListener('click',()=>{const token=String(input.value||'').trim();if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)){notice.textContent='Vérifiez d’abord un certificat réel avec son token UUID pour créer un QR code.';notice.classList.add('show');return;}const link=new URL(window.location.href);link.search='';link.hash='';link.searchParams.set('token',token);document.getElementById('qr-link').textContent=link.href;document.getElementById('qr-image').src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(link.href);document.getElementById('qr-panel').classList.add('show');});
+document.getElementById('copy-link').addEventListener('click',async()=>{const value=document.getElementById('qr-link').textContent;if(!value)return;try{await navigator.clipboard.writeText(value);document.getElementById('copy-link').textContent='Lien copié ✓';}catch{notice.textContent='Copie automatique indisponible. Copiez manuellement le lien affiché.';notice.classList.add('show');}});
+const tokenFromUrl=new URLSearchParams(window.location.search).get('token');if(tokenFromUrl){input.value=tokenFromUrl;verify(tokenFromUrl);}
 </script>
 </body>
 </html>
